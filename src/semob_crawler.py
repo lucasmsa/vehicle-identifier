@@ -1,12 +1,14 @@
 from selenium import webdriver
 from config.constants import URL
 import chromedriver_autoinstaller
+from aws_operations import AwsOperations
 from selenium.webdriver.common.by import By
 
 
 class SemobCrawler:
     def __init__(self):
-        self.setup_webdriver()
+        self.aws_operations = AwsOperations()
+        self.aws_operations.upload_file('assets/car.jpg')
 
     def setup_webdriver(self):
         chromedriver_autoinstaller.install()
@@ -34,4 +36,3 @@ class SemobCrawler:
 
 
 semob_crawler = SemobCrawler()
-semob_crawler.run()
