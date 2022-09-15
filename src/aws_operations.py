@@ -43,20 +43,10 @@ class AwsOperations:
         )
         if 'Contents' in list_response:
             key = list_response['Contents'][0]['Key']
-            # item_response = self.s3.get_object(
-            #     Bucket=self.BUCKET,
-            #     Key=key
-            # )
 
             self.s3.download_file(
                 Bucket=self.BUCKET, Key=key, Filename=self.OUTPUT_PATH
             )
-            # image = mpimg.imread(BytesIO(item_response['Body'].read()), 'jp2')
-
-            # plt.savefig(self.OUTPUT_PATH)
-            # plt.figure(0)
-            # plt.imshow(image)
-            # plt.show()
 
             return cv2.imread(self.OUTPUT_PATH)
         else:
