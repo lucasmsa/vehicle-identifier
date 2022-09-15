@@ -1,14 +1,14 @@
-from io import BytesIO
+import cv2
 import os
 import uuid
 import boto3
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from dotenv import dotenv_values
 from botocore.exceptions import ClientError
 
 
 class AwsOperations:
+    OUTPUT_PATH = './assets/output.png'
+
     def __init__(self):
         self.setup_s3_storage()
 
@@ -43,17 +43,21 @@ class AwsOperations:
         )
         if 'Contents' in list_response:
             key = list_response['Contents'][0]['Key']
-            item_response = self.s3.get_object(
-                Bucket=self.BUCKET,
-                Key=key
+            # item_response = self.s3.get_object(
+            #     Bucket=self.BUCKET,
+            #     Key=key
+            # )
+
+            self.s3.download_file(
+                Bucket=self.BUCKET, Key=key, Filename=self.OUTPUT_PATH
             )
-            image = mpimg.imread(BytesIO(item_response['Body'].read()), 'jp2')
-            plt.figure(0)
-            plt.imshow(image)
-            plt.show()
+            # image = mpimg.imread(BytesIO(item_response['Body'].read()), 'jp2')
+
+            # plt.savefig(self.OUTPUT_PATH)
+            # plt.figure(0)
+            # plt.imshow(image)
+            # plt.show()
+
+            return cv2.imread(self.OUTPUT_PATH)
         else:
             print("Didn't find an item. Please try again.")
-
-
-aws_operations = AwsOperations()
-aws_operations.get_random_object()

@@ -1,4 +1,8 @@
-cron.py
 __pycache__
 .DS_Store
 .env
+cron.py
+coco.names
+yolov3-320.weights
+yolov3-320.cfg
+yolov3.weights
