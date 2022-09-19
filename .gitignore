@@ -6,3 +6,5 @@ coco.names
 yolov3-320.weights
 yolov3-320.cfg
 yolov3.weights
+training.data
+test.data
