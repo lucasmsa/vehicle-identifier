@@ -1,4 +1,3 @@
-import os
 import csv
 import math
 
@@ -11,10 +10,12 @@ class KNNColorClassifier:
         self.test_data = test_data
         self.training_feature_vector = []
         self.test_feature_vector = []
+        self.extract_feature_vectors_from_data_files("TRAIN")
 
     def run(self):
-        self.extract_feature_vectors_from_data_files()
-        self.fetch_classifier_predictions()
+        self.extract_feature_vectors_from_data_files("TEST")
+        predictions = self.fetch_classifier_predictions()
+        return predictions
 
     def calculate_euclidean_distance(self, first_variable, second_variable, length):
         distance = 0
@@ -59,16 +60,19 @@ class KNNColorClassifier:
             result = self.fetch_nearest_neighbors_votes(nearest_neighbors)
             classifier_predictions.append(result)
 
-        return classifier_predictions[0]
+        return classifier_predictions
 
-    def extract_feature_vectors_from_data_files(self):
-        with open(self.training_data) as training_file:
-            self.parse_rgb_values(self.training_feature_vector, training_file)
-
-        with open(self.test_data) as testing_file:
-            self.parse_rgb_values(self.test_feature_vector, testing_file)
+    def extract_feature_vectors_from_data_files(self, type):
+        if type == "TRAIN":
+            with open(self.training_data) as training_file:
+                self.parse_rgb_values(
+                    self.training_feature_vector, training_file)
+        else:
+            with open(self.test_data) as testing_file:
+                self.parse_rgb_values(self.test_feature_vector, testing_file)
 
     def parse_rgb_values(self, feature_vector, file):
+        feature_vector.clear()
         lines = csv.reader(file)
         dataset = list(lines)
 
@@ -76,9 +80,3 @@ class KNNColorClassifier:
             for y in range(3):
                 dataset[x][y] = float(dataset[x][y])
             feature_vector.append(dataset[x])
-
-
-current_directory_path = f"{os.path.dirname(os.path.realpath(__file__))}"
-knn_color_classifier = KNNColorClassifier(
-    f"{current_directory_path}/training.data", f"{current_directory_path}/test.data")
-knn_color_classifier.run()

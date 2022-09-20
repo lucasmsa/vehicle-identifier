@@ -51,7 +51,3 @@ class ColorHistogramFeatureExtraction:
                 f"{self.dataset_path}/{directory_color}"), directory_color)
 
         return self.write_feature_data_file("".join(self.training_images_feature_data), f"{self.current_directory_path}/training.data")
-
-
-color_histogram_feature_extraction = ColorHistogramFeatureExtraction()
-color_histogram_feature_extraction.train_color_histogram_data()
