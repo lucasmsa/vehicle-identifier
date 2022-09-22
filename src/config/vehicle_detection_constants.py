@@ -1,0 +1,13 @@
+FONT_SIZE = 0.5
+INPUT_SIZE = 320
+FONT_THICKNESS = 2
+NMS_THRESHOLD = 0.2
+FONT_COLOR = (0, 0, 255)
+CONFIDENCE_THRESHOLD = 0.2
+MODEL_WEIGHTS = 'yolov3-320.weights'
+REQUIRED_CLASS_INDICES = [2, 3, 5, 7]
+MODEL_CONFIGURATION = 'yolov3-320.cfg'
+COLOR_TEST_DATA = "./src/color_detection/test.data"
+VEHICLE_TEMP_FILE_PATH = "./assets/vehicle_box.png"
+COLOR_TRAIN_DATA = "./src/color_detection/training.data"
+COCO_CLASS_NAMES = open('coco.names').read().strip().split('\n')

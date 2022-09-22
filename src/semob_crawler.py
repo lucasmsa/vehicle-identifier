@@ -1,4 +1,4 @@
-from config.constants import SEMOB_URL
+from config.url_constants import SEMOB_URL
 from aws_operations import AwsOperations
 from selenium.webdriver.common.by import By
 from transit_camera_crawler import TransitCameraCrawler

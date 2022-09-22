@@ -1,7 +1,7 @@
 import os
 import uuid
 import random
-from config.constants import CCTUPE_URL
+from config.url_constants import CCTUPE_URL
 from aws_operations import AwsOperations
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait

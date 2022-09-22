@@ -21,7 +21,7 @@ class AwsOperations:
         )
         self.s3 = self.session.client('s3')
 
-    def upload_file(self, file_name, object_name=None):
+    def upload_file(self, file_name: str, object_name: str = None):
         if object_name is None:
             object_name = os.path.basename(file_name)
 
