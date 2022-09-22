@@ -1,11 +1,13 @@
 .env
 images/
 cron.py
+dataset/
 test.data
 .DS_Store
 coco.names
 images.zip
 __pycache__
+classes.txt
 training.data
 yolov3.weights
 yolov3-320.cfg

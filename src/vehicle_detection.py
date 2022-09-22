@@ -3,10 +3,10 @@ import cv2
 import numpy as np
 import collections
 from operator import itemgetter
-from aws_operations import AwsOperations
-from color_detection.knn_color_classifier import KNNColorClassifier
-from license_plates_detection.license_plates_detector import LicensePlateDetector
-from color_detection.color_histogram_feature_extraction import ColorHistogramFeatureExtraction
+from infra.aws.aws_operations import AwsOperations
+from modules.color_detection.knn_color_classifier import KNNColorClassifier
+from modules.license_plates_detection.license_plates_detector import LicensePlateDetector
+from modules.color_detection.color_histogram_feature_extraction import ColorHistogramFeatureExtraction
 from config.vehicle_detection_constants import COCO_CLASS_NAMES, COLOR_TEST_DATA, COLOR_TRAIN_DATA, \
     CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
     NMS_THRESHOLD, REQUIRED_CLASS_INDICES, VEHICLE_TEMP_FILE_PATH
@@ -139,5 +139,5 @@ class VehicleClassifier:
         self.print_image()
 
 
-vehicle_classifier = VehicleClassifier(image_path="./assets/brazilian-car.jpg")
+vehicle_classifier = VehicleClassifier()
 vehicle_classifier.run()

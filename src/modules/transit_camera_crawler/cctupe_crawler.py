@@ -2,7 +2,7 @@ import os
 import uuid
 import random
 from config.url_constants import CCTUPE_URL
-from aws_operations import AwsOperations
+from infra.aws.aws_operations import AwsOperations
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from transit_camera_crawler import TransitCameraCrawler
@@ -54,7 +54,3 @@ class CCTUPECrawler(TransitCameraCrawler):
                 self.finish_process()
         except NoSuchElementException:
             pass
-
-
-cctupe_crawler = CCTUPECrawler()
-cctupe_crawler.run()
