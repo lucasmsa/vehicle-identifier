@@ -90,7 +90,7 @@ class CnnColorClassifier:
 
         csv_logger = CSVLogger('training.log', separator=',', append=False)
 
-        checkpointer = ModelCheckpoint(filepath='EFN-model.best.h5',
+        checkpointer = ModelCheckpoint(filepath=f"{self.WEIGHTS_FILE_PATH}/EFN-model.best.h5",
                                        verbose=1,
                                        save_best_only=True)
 

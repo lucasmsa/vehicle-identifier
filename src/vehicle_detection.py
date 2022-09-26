@@ -5,24 +5,26 @@ import collections
 from operator import itemgetter
 from infra.aws.aws_operations import AwsOperations
 from modules.color_detection.cnn_vehicle_color_classifier import CnnColorClassifier
+from modules.license_plates_detection.license_plates_character_extractor import LicensePlateCharacterExtractor
 from modules.license_plates_detection.license_plates_detector import LicensePlateDetector
-from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
+from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, LICENSE_PLATE_TEMP_FILE_PATH, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
     NMS_THRESHOLD, REQUIRED_CLASS_INDICES, VEHICLE_TEMP_FILE_PATH
 
 
 class VehicleClassifier:
     def __init__(self, image_path: str = None):
-        self.network_model = cv2.dnn.readNetFromDarknet(
-            MODEL_CONFIGURATION, MODEL_WEIGHTS)
         np.random.seed(42)
+        self.detection = []
+        self.detected_classes = []
+        self.image_path = image_path
+        self.aws_operations = AwsOperations()
         self.colors = np.random.randint(0, 255, size=(
             len(COCO_CLASS_NAMES), 3), dtype='uint8')
-        self.detected_classes = []
-        self.detection = []
-        self.aws_operations = AwsOperations()
+        self.network_model = cv2.dnn.readNetFromDarknet(
+            MODEL_CONFIGURATION, MODEL_WEIGHTS)
         self.cnn_color_classifier = CnnColorClassifier()
-        self.image_path = image_path
         self.license_plates_detector = LicensePlateDetector()
+        self.license_plates_character_extractor = LicensePlateCharacterExtractor()
 
     def pre_process_data(self):
         if self.image_path:
@@ -48,11 +50,21 @@ class VehicleClassifier:
             VEHICLE_TEMP_FILE_PATH)
         license_plates_coordinates = self.license_plates_detector.run(
             VEHICLE_TEMP_FILE_PATH)
+        license_plate_text = ""
+
+        if len(license_plates_coordinates):
+            license_plate_image = self.license_plates_detector.crop_plate(vehicle_box_image,
+                                                                          license_plates_coordinates[0])
+            cv2.imwrite(LICENSE_PLATE_TEMP_FILE_PATH, license_plate_image)
+            license_plate_text += self.license_plates_character_extractor.run(
+                LICENSE_PLATE_TEMP_FILE_PATH, True)
+
         os.remove(VEHICLE_TEMP_FILE_PATH)
 
         return {
             "color": color_predictions[0],
-            "license_plates_coordinates": license_plates_coordinates
+            "license_plates_coordinates": license_plates_coordinates,
+            "license_plate_text": license_plate_text
         }
 
     def post_process_data(self):
@@ -87,8 +99,8 @@ class VehicleClassifier:
             vehicle_information = self.extract_vehicle_informations(
                 center_y, center_x, box_height, box_width)
 
-            vehicle_color, license_plate_coordinates = itemgetter(
-                "color", "license_plates_coordinates")(vehicle_information)
+            vehicle_color, license_plate_coordinates, license_plate_text = itemgetter(
+                "color", "license_plates_coordinates", "license_plate_text")(vehicle_information)
 
             detected_vehicle_text = f'{vehicle_color.upper()} {name.upper()} {int(confidence_scores[i]*100)}%'
 
@@ -98,15 +110,19 @@ class VehicleClassifier:
             cv2.rectangle(self.image, (center_x, center_y),
                           (center_x + box_width, center_y + box_height), color, 1)
 
-            for license_plate_coordinate in license_plate_coordinates:
+            if license_plate_coordinates:
                 x, y, width, height = itemgetter(
-                    "x", "y", "width", "height")(license_plate_coordinate)
+                    "x", "y", "width", "height")(license_plate_coordinates[0])
 
                 x_position = x + center_x
                 y_position = y + center_y
 
                 cv2.rectangle(self.image, (x_position, y_position),
                               (x_position + width, y_position + height), color, 1)
+
+                cv2.putText(self.image, license_plate_text,
+                            (x_position, int(y_position - height/4)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                os.remove(LICENSE_PLATE_TEMP_FILE_PATH)
 
             self.detection.append([center_x, center_y, box_width, box_height,
                                   REQUIRED_CLASS_INDICES.index(class_ids[i])])
@@ -132,5 +148,5 @@ class VehicleClassifier:
         self.print_image()
 
 
-vehicle_classifier = VehicleClassifier("./assets/recife_camera.png")
+vehicle_classifier = VehicleClassifier("./assets/brazilian-car.jpg")
 vehicle_classifier.run()

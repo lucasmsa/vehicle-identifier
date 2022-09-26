@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from operator import itemgetter
 
 
 class LicensePlateDetector:
@@ -12,10 +13,10 @@ class LicensePlateDetector:
             "./yolov3-license_plates.weights", "./yolov3-license_plates-test.cfg")
 
     def run(self, image_path: str) -> list:
-        image = cv2.imread(image_path)
-        height, width, _ = image.shape
+        self.image = cv2.imread(image_path)
+        height, width, _ = self.image.shape
         blob = cv2.dnn.blobFromImage(
-            image, 1 / 255, (416, 416), (0, 0, 0), swapRB=True, crop=False)
+            self.image, 1 / 255, (416, 416), (0, 0, 0), swapRB=True, crop=False)
         self.network.setInput(blob)
         output_layer_names = self.network.getUnconnectedOutLayersNames()
         layer_outputs = self.network.forward(output_layer_names)
@@ -47,9 +48,9 @@ class LicensePlateDetector:
                 x, y, w, h = bounding_boxes[i]
                 label = self.CLASS
                 confidence = f"{int(confidences[i]*100)}%"
-                cv2.rectangle(image, (x, y),
+                cv2.rectangle(self.image, (x, y),
                               (x + w, y + h), self.BOUNDING_BOX_COLOR, 5)
-                cv2.putText(image, label + ' ' + confidence,
+                cv2.putText(self.image, label + ' ' + confidence,
                             (x, y - round(h/4)), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
                 coordinates.append({
                     "x": x,
@@ -58,12 +59,13 @@ class LicensePlateDetector:
                     "height": h
                 })
 
-        cv2.imshow("image", image)
+        cv2.imshow("image", self.image)
         cv2.waitKey(0)
 
         return coordinates
 
-    def crop_plate(self):
-        x, y, w, h = self.coordinates
-        roi = self.img[y:y + h, x:x + w]
-        self.roi_image = roi
+    def crop_plate(self, image, coordinates):
+        x, y, width, height = itemgetter(
+            "x", "y", "width", "height")(coordinates)
+
+        return image[y:y + height, x:x + width]
