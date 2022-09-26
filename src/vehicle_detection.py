@@ -139,5 +139,5 @@ class VehicleClassifier:
         self.print_image()
 
 
-vehicle_classifier = VehicleClassifier()
+vehicle_classifier = VehicleClassifier("./assets/transit_image.png")
 vehicle_classifier.run()

@@ -1,7 +1,9 @@
 .env
+.data*
 images/
 cron.py
 dataset/
+weights/
 test.data
 .DS_Store
 coco.names
@@ -11,7 +13,9 @@ classes.txt
 training.data
 yolov3.weights
 yolov3-320.cfg
+cnn-color-weights
 yolov3-320.weights
+vehicle-color-dataset/
 yolov3-license_plates.weights 
 license_plate_label_parser.py
 yolov3-license_plates-test.cfg
