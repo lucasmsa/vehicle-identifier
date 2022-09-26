@@ -4,11 +4,9 @@ import numpy as np
 import collections
 from operator import itemgetter
 from infra.aws.aws_operations import AwsOperations
-from modules.color_detection.knn_color_classifier import KNNColorClassifier
+from modules.color_detection.cnn_vehicle_color_classifier import CnnColorClassifier
 from modules.license_plates_detection.license_plates_detector import LicensePlateDetector
-from modules.color_detection.color_histogram_feature_extraction import ColorHistogramFeatureExtraction
-from config.vehicle_detection_constants import COCO_CLASS_NAMES, COLOR_TEST_DATA, COLOR_TRAIN_DATA, \
-    CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
+from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
     NMS_THRESHOLD, REQUIRED_CLASS_INDICES, VEHICLE_TEMP_FILE_PATH
 
 
@@ -22,9 +20,7 @@ class VehicleClassifier:
         self.detected_classes = []
         self.detection = []
         self.aws_operations = AwsOperations()
-        self.color_histogram_feature_extraction = ColorHistogramFeatureExtraction()
-        self.knn_color_classifier = KNNColorClassifier(
-            COLOR_TRAIN_DATA, COLOR_TEST_DATA)
+        self.cnn_color_classifier = CnnColorClassifier()
         self.image_path = image_path
         self.license_plates_detector = LicensePlateDetector()
 
@@ -48,11 +44,8 @@ class VehicleClassifier:
                                                 box_height, center_x:center_x + box_width]
 
         cv2.imwrite(VEHICLE_TEMP_FILE_PATH, vehicle_box_image)
-        feature_extraction = self.color_histogram_feature_extraction.extract_color_histogram_from_image(
+        color_predictions = self.cnn_color_classifier.run_test(
             VEHICLE_TEMP_FILE_PATH)
-        self.color_histogram_feature_extraction.write_feature_data_file(
-            feature_extraction, COLOR_TEST_DATA)
-        color_predictions = self.knn_color_classifier.run()
         license_plates_coordinates = self.license_plates_detector.run(
             VEHICLE_TEMP_FILE_PATH)
         os.remove(VEHICLE_TEMP_FILE_PATH)
@@ -139,5 +132,5 @@ class VehicleClassifier:
         self.print_image()
 
 
-vehicle_classifier = VehicleClassifier("./assets/transit_image.png")
+vehicle_classifier = VehicleClassifier("./assets/recife_camera.png")
 vehicle_classifier.run()

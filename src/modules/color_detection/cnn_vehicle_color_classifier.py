@@ -1,8 +1,7 @@
 import os
 import numpy as np
-from tensorflow import nn
+from os.path import exists
 from keras.models import Model
-import matplotlib.pyplot as plt
 from keras.models import load_model
 from keras.optimizers import Adamax
 from keras.layers import Dense, Dropout
@@ -18,10 +17,11 @@ class CnnColorClassifier:
     BASE_DATASET_DIRECTORY_PATH = "./src/modules/color_detection/vehicle-color-dataset"
     WEIGHTS_FILE_PATH = "./src/weights/color"
     BATCH_SIZE = 32
-    IMAGE_SIZE = (256, 256)
+    IMAGE_SIZE = (224, 224)
 
     def __init__(self):
         self.classes = self.fetch_classes()
+        self.model = self.fetch_model()
 
     def preprocess_data(self):
         train_data_generator = ImageDataGenerator(
@@ -45,21 +45,24 @@ class CnnColorClassifier:
         self.preprocess_data()
         self.train_cnn_model()
 
-    def run_tests(self):
-        self.model = load_model(self.WEIGHTS_FILE_PATH)
-        print(self.model.summary())
-        test_image = load_img(
-            './assets/brazilian-car.jpg', target_size=(self.IMAGE_SIZE))
+    def run_test(self, image_path: str):
+        test_image = load_img(image_path, target_size=(self.IMAGE_SIZE))
         test_image = img_to_array(test_image)
-        test_image = test_image / 255.0
-        test_image = np.expand_dims(test_image, axis=0)
+        ndata = np.expand_dims(test_image, axis=0)
+        y_prob = self.model.predict(ndata/255)
+        y_prob.argmax(axis=-1)
+        predicted_classes = [sorted(self.classes)[i]
+                             for i in np.where(np.ravel(y_prob) > 0.1)[0]]
 
-        prediction = self.model.predict(test_image)
-        print(prediction[0][0])
-        scores = nn.softmax(prediction[0])
-        scores = scores.numpy()
-        print(
-            f"{self.classes[np.argmax(scores)]} with a { (100 * np.max(scores)).round(2) } percent confidence.")
+        return predicted_classes
+
+    def fetch_model(self):
+        model_path = f"{self.WEIGHTS_FILE_PATH}/EFN-model.best.h5"
+        file_exists = exists(model_path)
+        if file_exists:
+            return load_model(model_path)
+        else:
+            return self.create_model()
 
     def fetch_classes(self):
         color_directories_list = os.listdir(
@@ -67,7 +70,6 @@ class CnnColorClassifier:
         return list(filter(lambda directory: (directory != ".DS_Store"), color_directories_list))
 
     def create_model(self):
-        model_name = 'EfficientNetB3'
         base_model = EfficientNetB3(include_top=False, weights='imagenet', input_shape=(
             self.IMAGE_SIZE[0], self.IMAGE_SIZE[1], 3), pooling='max')
         x = base_model.output
@@ -97,26 +99,18 @@ class CnnColorClassifier:
                                    restore_best_weights=True,
                                    mode='min')
 
-        history = self.model.fit(self.training_set,
-                                 epochs=n_epochs,
-                                 steps_per_epoch=steps_per_epoch,
-                                 validation_data=self.validation_set,
-                                 validation_steps=val_steps,
-                                 callbacks=[early_stop,
-                                            checkpointer, csv_logger],
-                                 verbose=True,
-                                 shuffle=True,
-                                 workers=4)
+        self.model.fit(self.training_set,
+                       epochs=n_epochs,
+                       steps_per_epoch=steps_per_epoch,
+                       validation_data=self.validation_set,
+                       validation_steps=val_steps,
+                       callbacks=[early_stop,
+                                  checkpointer, csv_logger],
+                       verbose=True,
+                       shuffle=True,
+                       workers=4)
         self.model.save_weights(f"{self.WEIGHTS_FILE_PATH}/model_weights.h5")
-
-        plt.plot(history.history['accuracy'])
-        plt.plot(history.history['val_accuracy'])
-        plt.title('model accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'validation'], loc='upper left')
-        plt.show()
 
 
 cnn_color_classifier = CnnColorClassifier()
-cnn_color_classifier.run_training()
+cnn_color_classifier.run_test("./assets/bright_yellow_car.jpg")
