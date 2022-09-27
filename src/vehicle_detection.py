@@ -56,7 +56,7 @@ class VehicleClassifier:
             license_plate_image = self.license_plates_detector.crop_plate(vehicle_box_image,
                                                                           license_plates_coordinates[0])
             cv2.imwrite(LICENSE_PLATE_TEMP_FILE_PATH, license_plate_image)
-            license_plate_text += self.license_plates_character_extractor.run(
+            license_plate_text = self.license_plates_character_extractor.run(
                 LICENSE_PLATE_TEMP_FILE_PATH, True)
 
         os.remove(VEHICLE_TEMP_FILE_PATH)
@@ -111,21 +111,23 @@ class VehicleClassifier:
                           (center_x + box_width, center_y + box_height), color, 1)
 
             if license_plate_coordinates:
-                x, y, width, height = itemgetter(
-                    "x", "y", "width", "height")(license_plate_coordinates[0])
-
-                x_position = x + center_x
-                y_position = y + center_y
-
-                cv2.rectangle(self.image, (x_position, y_position),
-                              (x_position + width, y_position + height), color, 1)
-
-                cv2.putText(self.image, license_plate_text,
-                            (x_position, int(y_position - height/4)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                self.paint_license_plate_characters(
+                    license_plate_coordinates, center_x, center_y, color, license_plate_text)
                 os.remove(LICENSE_PLATE_TEMP_FILE_PATH)
 
             self.detection.append([center_x, center_y, box_width, box_height,
                                   REQUIRED_CLASS_INDICES.index(class_ids[i])])
+
+    def paint_license_plate_characters(self, license_plate_coordinates, center_x, center_y, color, license_plate_text):
+        x, y, width, height = itemgetter(
+            "x", "y", "width", "height")(license_plate_coordinates[0])
+        x_position = x + center_x
+        y_position = y + center_y
+
+        cv2.rectangle(self.image, (x_position, y_position),
+                      (x_position + width, y_position + height), color, 1)
+        cv2.putText(self.image, license_plate_text.upper(),
+                    (x_position, int(y_position - height/4)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     def print_image(self):
         frequency = collections.Counter(self.detected_classes)
@@ -148,5 +150,5 @@ class VehicleClassifier:
         self.print_image()
 
 
-vehicle_classifier = VehicleClassifier("./assets/brazilian-car.jpg")
+vehicle_classifier = VehicleClassifier("./assets/brazilian-car-back.jpg")
 vehicle_classifier.run()

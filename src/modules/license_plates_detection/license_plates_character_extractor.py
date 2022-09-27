@@ -1,4 +1,5 @@
 import cv2
+import easyocr
 import pytesseract
 import skimage.segmentation
 
@@ -10,13 +11,19 @@ class LicensePlateCharacterExtractor:
     def __init__(self):
         self.options = f"-c tessedit_char_whitelist={self.ALPHANUMERIC_CHARACTERS} --psm {self.PAGE_SEGMENTATION_METHOD}"
 
-    def run(self, image_path: str, clear_border=False):
+    def run(self, image_path: str, clear_border=False, method: str = "easyocr"):
         self.pre_process(image_path, clear_border)
-        return self.execute_tesseract_ocr()
+        return self.execute_ocr(method)
 
-    def execute_tesseract_ocr(self):
-        license_plate_text = pytesseract.image_to_string(
-            self.contour_image, config=self.options)
+    def execute_ocr(self, method: str):
+        license_plate_text = ""
+        if method == "easyocr":
+            reader = easyocr.Reader(['en'])
+            license_plate_informations = reader.readtext(self.grayscale_image)
+            license_plate_text = license_plate_informations[0][1]
+        else:
+            license_plate_text = pytesseract.image_to_string(
+                self.grayscale_image, config=self.options)[:-1]
 
         return license_plate_text
 
