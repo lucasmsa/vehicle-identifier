@@ -19,7 +19,7 @@ class LicensePlateCharacterExtractor:
         license_plate_text = ""
         if method == "easyocr":
             reader = easyocr.Reader(['en'])
-            license_plate_informations = reader.readtext(self.grayscale_image)
+            license_plate_informations = reader.readtext(self.contour_image)
             license_plate_text = license_plate_informations[0][1]
         else:
             license_plate_text = pytesseract.image_to_string(

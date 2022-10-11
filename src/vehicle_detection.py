@@ -1,13 +1,14 @@
 import os
 import cv2
-import numpy as np
 import collections
+import numpy as np
 from operator import itemgetter
 from infra.aws.aws_operations import AwsOperations
 from modules.color_detection.cnn_vehicle_color_classifier import CnnColorClassifier
-from modules.license_plates_detection.license_plates_character_extractor import LicensePlateCharacterExtractor
 from modules.license_plates_detection.license_plates_detector import LicensePlateDetector
-from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, LICENSE_PLATE_TEMP_FILE_PATH, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
+from modules.license_plates_detection.license_plates_character_extractor import LicensePlateCharacterExtractor
+from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRESHOLD, FONT_COLOR, FONT_SIZE, FONT_THICKNESS, INPUT_SIZE, \
+    LICENSE_PLATE_TEMP_FILE_PATH, MODEL_CONFIGURATION, MODEL_WEIGHTS,\
     NMS_THRESHOLD, REQUIRED_CLASS_INDICES, VEHICLE_TEMP_FILE_PATH
 
 
@@ -131,16 +132,9 @@ class VehicleClassifier:
 
     def print_image(self):
         frequency = collections.Counter(self.detected_classes)
-
-        cv2.putText(self.image, "Car:        "+str(frequency['car']), (20, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, FONT_COLOR, FONT_THICKNESS)
-        cv2.putText(self.image, "Motorbike:  "+str(frequency['motorbike']), (20, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, FONT_COLOR, FONT_THICKNESS)
-        cv2.putText(self.image, "Bus:        "+str(frequency['bus']), (20, 80),
-                    cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, FONT_COLOR, FONT_THICKNESS)
-        cv2.putText(self.image, "Truck:      "+str(frequency['truck']), (20, 100),
-                    cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, FONT_COLOR, FONT_THICKNESS)
-
+        for index, vehicle in enumerate(["Car", "Motorbike", "Bus", "Truck"]):
+            cv2.putText(self.image, f"{vehicle}: {frequency[vehicle.lower()]}", (20, 40 + (index*20)),
+                        cv2.FONT_HERSHEY_SIMPLEX, FONT_SIZE, FONT_COLOR, FONT_THICKNESS)
         cv2.imshow("image", self.image)
         cv2.waitKey(0)
 
