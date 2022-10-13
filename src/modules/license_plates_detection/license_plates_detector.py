@@ -12,7 +12,7 @@ class LicensePlateDetector:
         self.network = cv2.dnn.readNet(
             "./yolov3-license_plates.weights", "./yolov3-license_plates-test.cfg")
 
-    def run(self, image_path: str) -> list:
+    def run(self, image_path: str):
         self.image = cv2.imread(image_path)
         height, width, _ = self.image.shape
         blob = cv2.dnn.blobFromImage(
@@ -42,7 +42,7 @@ class LicensePlateDetector:
         indexes = cv2.dnn.NMSBoxes(
             bounding_boxes,  confidences, self.CONFIDENCE_THRESHOLD, 0.4)
 
-        coordinates = []
+        coordinates, confidence_score = [], 0
         if len(indexes):
             for i in indexes.flatten():
                 x, y, w, h = bounding_boxes[i]
@@ -52,17 +52,15 @@ class LicensePlateDetector:
                               (x + w, y + h), self.BOUNDING_BOX_COLOR, 5)
                 cv2.putText(self.image, label + ' ' + confidence,
                             (x, y - round(h/4)), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+                confidence_score = int(confidences[i]*100)
                 coordinates.append({
                     "x": x,
                     "y": y,
                     "width": w,
                     "height": h
                 })
-
-        cv2.imshow("image", self.image)
-        cv2.waitKey(0)
-
-        return coordinates
+        
+        return (coordinates, confidence_score)
 
     def crop_plate(self, image, coordinates):
         x, y, width, height = itemgetter(

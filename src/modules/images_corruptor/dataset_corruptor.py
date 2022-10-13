@@ -1,7 +1,7 @@
 import os
 import cv2
 import random
-from image_corruptor import ImageCorruptor
+from modules.images_corruptor.image_corruptor import ImageCorruptor
 
 
 class DatasetCorruptor:
@@ -10,9 +10,9 @@ class DatasetCorruptor:
     def __init__(self):
         self.image_corruptor = ImageCorruptor()
         self.filter_mapping = {
-            "BLUR": lambda image: self.image_corruptor.blur(image),
-            "DARKEN": lambda image: self.image_corruptor.darken(image),
-            "RESOLUTION": lambda image: self.image_corruptor.handle_resolution(image)
+            "BLUR": lambda image, intensity: self.image_corruptor.blur(image, intensity),
+            "DARKEN": lambda image, intensity: self.image_corruptor.darken(image, intensity),
+            "RESOLUTION": lambda image, intensity: self.image_corruptor.handle_resolution(image, intensity)
         }
 
     def run(self, quantity, filter_types):
@@ -27,22 +27,33 @@ class DatasetCorruptor:
             images,
             k=quantity)
 
-    def filter_images(self, filter_types):
+    def filter_all_random_images(self, filter_types):
         if not len(filter_types):
             return
 
         for image_name in self.random_images:
-            image = cv2.imread(self.DATASET_PATH + image_name)
-            for filter_type in filter_types:
-                filtered_image = self.filter_mapping[filter_type](image)
-                self.image_corruptor.display_image(filtered_image)
+            self.filter_image(image_name, filter_types)
+
+    def filter_image(self, image_name, filter_type):
+        image = cv2.imread(self.DATASET_PATH + image_name)
+        
+        (filter_style, filter_intensity) = filter_type
+        
+        filtered_image = self.filter_mapping[filter_style](
+            image, filter_intensity)
+        
+        # self.image_corruptor.display_image(filtered_image)
+        
+        return filtered_image
+            
 
 
-dataset_corruptor = DatasetCorruptor()
-dataset_corruptor.run(5, ["BLUR", "DARKEN", "RESOLUTION"])
+# dataset_corruptor = DatasetCorruptor()
+# dataset_corruptor.run(1, [("BLUR", 10), ("DARKEN", 0.5), ("RESOLUTION", 80)])
+
+# [] Fazer os testes de extração
+# [] Salvar resultados em um csv
 
 
-# 1. Pegar imagens aleatórias do dataset
-# 2. Para cada uma delas aplicar operação do imageCorruptor
-# 3. Faz os testes de extração [amanhã / quarta]
-# 4. Salvar resultados em um csv [amanhã / quarta]
+# img1.jpg, img2.jpg, img3.jpg...
+# Para cada uma dessas aplicar os filtros

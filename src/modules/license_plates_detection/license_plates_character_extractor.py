@@ -20,7 +20,10 @@ class LicensePlateCharacterExtractor:
         if method == "easyocr":
             reader = easyocr.Reader(['en'])
             license_plate_informations = reader.readtext(self.contour_image)
-            license_plate_text = license_plate_informations[0][1]
+            try: 
+                license_plate_text = license_plate_informations[0][1]
+            except IndexError: 
+                license_plate_text = ""
         else:
             license_plate_text = pytesseract.image_to_string(
                 self.grayscale_image, config=self.options)[:-1]
@@ -39,6 +42,3 @@ class LicensePlateCharacterExtractor:
 
         self.contour_image = cv2.fastNlMeansDenoising(
             threshold_image, None, 20, 7, 21)
-
-        cv2.imshow("image", self.contour_image)
-        cv2.waitKey(0)

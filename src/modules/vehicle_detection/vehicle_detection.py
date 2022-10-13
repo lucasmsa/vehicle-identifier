@@ -13,11 +13,10 @@ from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRE
 
 
 class VehicleClassifier:
-    def __init__(self, image_path: str = None):
+    def __init__(self):
         np.random.seed(42)
         self.detection = []
         self.detected_classes = []
-        self.image_path = image_path
         self.aws_operations = AwsOperations()
         self.colors = np.random.randint(0, 255, size=(
             len(COCO_CLASS_NAMES), 3), dtype='uint8')
@@ -26,13 +25,17 @@ class VehicleClassifier:
         self.cnn_color_classifier = CnnColorClassifier()
         self.license_plates_detector = LicensePlateDetector()
         self.license_plates_character_extractor = LicensePlateCharacterExtractor()
+        
+    def get_image(self, image):
+        if isinstance(image, str):
+            if image == "AWS":
+                self.image = self.aws_operations.get_random_object()
+            else:
+                self.image = cv2.imread(image)
+        else: 
+            self.image = image
 
     def pre_process_data(self):
-        if self.image_path:
-            self.image = cv2.imread(self.image_path)
-        else:
-            self.image = self.aws_operations.get_random_object()
-
         self.original_image = self.image.copy()
         blob = cv2.dnn.blobFromImage(
             self.image, 1 / 255, (INPUT_SIZE, INPUT_SIZE), [0, 0, 0], 1, crop=False)
@@ -45,13 +48,17 @@ class VehicleClassifier:
     def extract_vehicle_informations(self, center_y: float, center_x: float, box_height: float, box_width: float) -> dict:
         vehicle_box_image = self.original_image[center_y:center_y +
                                                 box_height, center_x:center_x + box_width]
-
-        cv2.imwrite(VEHICLE_TEMP_FILE_PATH, vehicle_box_image)
+        try:
+            cv2.imwrite(VEHICLE_TEMP_FILE_PATH, vehicle_box_image)
+        except cv2.error:
+            raise Exception("Image could not be found") 
+            
         color_predictions = self.cnn_color_classifier.run_test(
             VEHICLE_TEMP_FILE_PATH)
-        license_plates_coordinates = self.license_plates_detector.run(
+        (license_plates_coordinates, license_plate_confidence) = self.license_plates_detector.run(
             VEHICLE_TEMP_FILE_PATH)
         license_plate_text = ""
+        self.license_plate_confidence = license_plate_confidence
 
         if len(license_plates_coordinates):
             license_plate_image = self.license_plates_detector.crop_plate(vehicle_box_image,
@@ -138,11 +145,10 @@ class VehicleClassifier:
         cv2.imshow("image", self.image)
         cv2.waitKey(0)
 
-    def run(self):
+    def run(self, image_path):
+        self.get_image(image_path)
         self.pre_process_data()
         self.post_process_data()
         self.print_image()
-
-
-vehicle_classifier = VehicleClassifier("./assets/brazilian-car-back.jpg")
-vehicle_classifier.run()
+        
+        return self.license_plate_confidence or 0
