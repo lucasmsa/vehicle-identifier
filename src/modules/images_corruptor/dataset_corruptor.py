@@ -1,7 +1,7 @@
 import os
 import cv2
 import random
-from modules.images_corruptor.image_corruptor import ImageCorruptor
+from image_corruptor import ImageCorruptor
 
 
 class DatasetCorruptor:
@@ -57,3 +57,24 @@ class DatasetCorruptor:
 
 # img1.jpg, img2.jpg, img3.jpg...
 # Para cada uma dessas aplicar os filtros
+
+dataset_corruptor = DatasetCorruptor()
+dataset_corruptor.fetch_random_images(1)
+initial_image = cv2.imread("./src/modules/license_plates_detection/images/" + dataset_corruptor.random_images[0])
+image_corruptor = ImageCorruptor()
+
+def fetch_blur_image_results(image):
+    print(image_corruptor.get_image_blur(image))
+    image_corruptor.display_image(image)
+    blurred_image = image_corruptor.blur(image, 10)
+    image_corruptor.display_image(blurred_image)
+    print(image_corruptor.get_image_blur(blurred_image))
+
+def fetch_brightness_image_results(image):
+    print(image_corruptor.get_image_brightness(image))
+    image_corruptor.display_image(image)
+    darkened_image = image_corruptor.darken(image, 0.2)
+    image_corruptor.display_image(darkened_image)
+    print(image_corruptor.get_image_blur(darkened_image))
+    
+fetch_brightness_image_results(initial_image)

@@ -14,17 +14,11 @@ from config.vehicle_detection_constants import COCO_CLASS_NAMES, CONFIDENCE_THRE
 
 class VehicleClassifier:
     def __init__(self):
-        np.random.seed(42)
-        self.detection = []
-        self.detected_classes = []
-        self.aws_operations = AwsOperations()
         self.colors = np.random.randint(0, 255, size=(
             len(COCO_CLASS_NAMES), 3), dtype='uint8')
         self.network_model = cv2.dnn.readNetFromDarknet(
             MODEL_CONFIGURATION, MODEL_WEIGHTS)
         self.cnn_color_classifier = CnnColorClassifier()
-        self.license_plates_detector = LicensePlateDetector()
-        self.license_plates_character_extractor = LicensePlateCharacterExtractor()
         
     def get_image(self, image):
         if isinstance(image, str):
@@ -34,6 +28,16 @@ class VehicleClassifier:
                 self.image = cv2.imread(image)
         else: 
             self.image = image
+        
+    def get_initial_values(self):
+        np.random.seed(42)
+        self.detection = []
+        self.detected_classes = []
+        self.license_plate_confidence = 0
+        self.aws_operations = AwsOperations()
+        self.license_plates_detector = LicensePlateDetector()
+        self.license_plates_character_extractor = LicensePlateCharacterExtractor()
+        
 
     def pre_process_data(self):
         self.original_image = self.image.copy()
@@ -44,6 +48,11 @@ class VehicleClassifier:
         output_names = [(layers_names[i - 1])
                         for i in self.network_model.getUnconnectedOutLayers()]
         self.outputs = self.network_model.forward(output_names)
+        
+    def extract_license_plate_confidence(self, license_plate_confidence):
+        print("CURRENT LICENSE PLATE CONFIDENCE", self.license_plate_confidence)
+        print("INCOMING LICENSE PLATE CONFIDENCE", license_plate_confidence)
+        self.license_plate_confidence = max(self.license_plate_confidence, license_plate_confidence)
 
     def extract_vehicle_informations(self, center_y: float, center_x: float, box_height: float, box_width: float) -> dict:
         vehicle_box_image = self.original_image[center_y:center_y +
@@ -58,7 +67,7 @@ class VehicleClassifier:
         (license_plates_coordinates, license_plate_confidence) = self.license_plates_detector.run(
             VEHICLE_TEMP_FILE_PATH)
         license_plate_text = ""
-        self.license_plate_confidence = license_plate_confidence
+        self.extract_license_plate_confidence(license_plate_confidence)
 
         if len(license_plates_coordinates):
             license_plate_image = self.license_plates_detector.crop_plate(vehicle_box_image,
@@ -146,6 +155,7 @@ class VehicleClassifier:
         cv2.waitKey(0)
 
     def run(self, image_path):
+        self.get_initial_values()
         self.get_image(image_path)
         self.pre_process_data()
         self.post_process_data()
