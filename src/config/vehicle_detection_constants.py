@@ -10,5 +10,6 @@ MODEL_CONFIGURATION = 'yolov3-320.cfg'
 VEHICLE_TEMP_FILE_PATH = "./tmp/vehicle_box.png"
 COLOR_TEST_DATA = "./src/modules/color_detection/test.data"
 LICENSE_PLATE_TEMP_FILE_PATH = "./tmp/license_plate_box.png"
+RESULTS_PATH = "./src/results/"
 COLOR_TRAIN_DATA = "./src/modules/color_detection/training.data"
 COCO_CLASS_NAMES = open('coco.names').read().strip().split('\n')

@@ -2,6 +2,7 @@
 .data*
 images/
 cron.py
+results/
 dataset/
 weights/
 test.data

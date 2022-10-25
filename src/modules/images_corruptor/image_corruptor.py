@@ -3,7 +3,6 @@ import math
 import numpy as np
 from PIL import Image, ImageStat
 
-
 class ImageCorruptor:
     def __init__(self):
         pass
@@ -50,4 +49,3 @@ class ImageCorruptor:
     def display_image(self, image):
         cv2.imshow("Filtered image", image)
         cv2.waitKey(0)
-

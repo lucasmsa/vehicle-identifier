@@ -53,14 +53,21 @@ class VehicleClassifier:
         print("CURRENT LICENSE PLATE CONFIDENCE", self.license_plate_confidence)
         print("INCOMING LICENSE PLATE CONFIDENCE", license_plate_confidence)
         self.license_plate_confidence = max(self.license_plate_confidence, license_plate_confidence)
+        
+    def filter_vehicle_box_negative_values(self, center_y: float, center_x: float, box_height: float, box_width: float):
+        [center_y, center_x, box_height, box_width] = list(\
+            map(lambda x: abs(x), [center_y, center_x, box_height, box_width]))
+        
+        return (center_y, center_x, box_height, box_width)
+        
 
     def extract_vehicle_informations(self, center_y: float, center_x: float, box_height: float, box_width: float) -> dict:
         vehicle_box_image = self.original_image[center_y:center_y +
                                                 box_height, center_x:center_x + box_width]
         try:
             cv2.imwrite(VEHICLE_TEMP_FILE_PATH, vehicle_box_image)
-        except cv2.error:
-            raise Exception("Image could not be found") 
+        except Exception as e:
+            raise Exception(str(e)) 
             
         color_predictions = self.cnn_color_classifier.run_test(
             VEHICLE_TEMP_FILE_PATH)
@@ -105,35 +112,40 @@ class VehicleClassifier:
 
         indices = cv2.dnn.NMSBoxes(
             boxes, confidence_scores, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
-        for i in indices.flatten():
-            center_x, center_y, box_width, box_height = boxes[
-                i][0], boxes[i][1], boxes[i][2], boxes[i][3]
 
-            color = [int(c) for c in self.colors[class_ids[i]]]
-            name = COCO_CLASS_NAMES[class_ids[i]]
-            self.detected_classes.append(name)
+        if len(indices) > 0:
+            for i in indices.flatten():
+                center_x, center_y, box_width, box_height = boxes[
+                    i][0], boxes[i][1], boxes[i][2], boxes[i][3]
 
-            vehicle_information = self.extract_vehicle_informations(
-                center_y, center_x, box_height, box_width)
+                color = [int(c) for c in self.colors[class_ids[i]]]
+                name = COCO_CLASS_NAMES[class_ids[i]]
+                self.detected_classes.append(name)
+                center_y, center_x, box_height, box_width = self.filter_vehicle_box_negative_values(\
+                                                        center_y, center_x, box_height, box_width)
+                vehicle_information = self.extract_vehicle_informations(
+                    center_y, center_x, box_height, box_width)
 
-            vehicle_color, license_plate_coordinates, license_plate_text = itemgetter(
-                "color", "license_plates_coordinates", "license_plate_text")(vehicle_information)
+                vehicle_color, license_plate_coordinates, license_plate_text = itemgetter(
+                    "color", "license_plates_coordinates", "license_plate_text")(vehicle_information)
 
-            detected_vehicle_text = f'{vehicle_color.upper()} {name.upper()} {int(confidence_scores[i]*100)}%'
+                detected_vehicle_text = f'{vehicle_color.upper()} {name.upper()} {int(confidence_scores[i]*100)}%'
 
-            cv2.putText(self.image, detected_vehicle_text, (center_x,
-                        center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+                cv2.putText(self.image, detected_vehicle_text, (center_x,
+                            center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
-            cv2.rectangle(self.image, (center_x, center_y),
-                          (center_x + box_width, center_y + box_height), color, 1)
+                cv2.rectangle(self.image, (center_x, center_y),
+                            (center_x + box_width, center_y + box_height), color, 1)
 
-            if license_plate_coordinates:
-                self.paint_license_plate_characters(
-                    license_plate_coordinates, center_x, center_y, color, license_plate_text)
-                os.remove(LICENSE_PLATE_TEMP_FILE_PATH)
+                if license_plate_coordinates:
+                    self.paint_license_plate_characters(
+                        license_plate_coordinates, center_x, center_y, color, license_plate_text)
+                    os.remove(LICENSE_PLATE_TEMP_FILE_PATH)
 
-            self.detection.append([center_x, center_y, box_width, box_height,
-                                  REQUIRED_CLASS_INDICES.index(class_ids[i])])
+                self.detection.append([center_x, center_y, box_width, box_height,
+                                    REQUIRED_CLASS_INDICES.index(class_ids[i])])
+        else:
+            raise Exception("No vehicle detected")
 
     def paint_license_plate_characters(self, license_plate_coordinates, center_x, center_y, color, license_plate_text):
         x, y, width, height = itemgetter(
