@@ -8,7 +8,7 @@ from modules.vehicle_detection.vehicle_detection import VehicleClassifier
 image_corruptor = ImageCorruptor()
 dataset_corruptor = DatasetCorruptor()
 vehicle_detection = VehicleClassifier()
-dataset_corruptor.fetch_random_images(3)
+dataset_corruptor.fetch_random_images(300)
 
 print("random images", dataset_corruptor.random_images)
 
@@ -16,7 +16,7 @@ def prepend_filter_intensity(filter_type, intensities):
     return list(map(lambda intensity: (filter_type, intensity), intensities))
 
 blur_mapping = prepend_filter_intensity("BLUR", [5, 8, 11, 14, 17, 20])
-darken_mapping = prepend_filter_intensity("DARKEN", [0.7, 0.6, 0.5, 0.4, 0.3, 0.2])
+darken_mapping = prepend_filter_intensity("DARKEN", [0.45, 0.4, 0.35, 0.3, 0.25, 0.2])
 resolution_mapping = prepend_filter_intensity("RESOLUTION", [30, 25, 20, 15, 10, 5])
 
 

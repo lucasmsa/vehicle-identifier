@@ -171,6 +171,5 @@ class VehicleClassifier:
         self.get_image(image_path)
         self.pre_process_data()
         self.post_process_data()
-        self.print_image()
         
         return self.license_plate_confidence or 0
