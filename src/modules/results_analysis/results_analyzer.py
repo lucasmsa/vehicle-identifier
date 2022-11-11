@@ -19,7 +19,19 @@ class ResultsAnalyzer:
                                             self.intensity_column_name]
         
         sorted_errored_intensity_values = errored_intensities.value_counts().sort_index(ascending=True)
-
+        
+        filtered_sorted_errored_intensity = []
+        
+        if(len(sorted_errored_intensity_values) < len(self.unique_intensities)):
+            set_sorted_errored_intensity = set(sorted_errored_intensity_values.index)
+            for intensity in self.unique_intensities:
+                if intensity not in set_sorted_errored_intensity:
+                    filtered_sorted_errored_intensity.append(0)
+                else: 
+                    filtered_sorted_errored_intensity.append(sorted_errored_intensity_values[intensity])
+                    
+            sorted_errored_intensity_values = pd.Series(filtered_sorted_errored_intensity)
+        
         errored_dataframe = pd.DataFrame({f'{self.filter_type.capitalize()} Intensities': self.unique_intensities, 'Errored': sorted_errored_intensity_values})
         errored_bar_plot = errored_dataframe.plot.bar(x=f'{self.filter_type.capitalize()} Intensities', y='Errored', rot=0)
         plt.show(block=True)
