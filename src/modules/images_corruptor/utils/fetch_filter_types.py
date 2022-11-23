@@ -7,13 +7,17 @@
 # img1.jpg, img2.jpg, img3.jpg...
 # Para cada uma dessas aplicar os filtros
 import cv2
+import os
+import sys
+import numpy as np
+sys.path.insert(1, f'{os.getcwd()}/src')
 from modules.images_corruptor.image_corruptor import ImageCorruptor
 from modules.images_corruptor.dataset_corruptor import DatasetCorruptor
 
 
 dataset_corruptor = DatasetCorruptor()
 dataset_corruptor.fetch_random_images(1)
-initial_image = cv2.imread("./assets/bright_blue_car.png")# cv2.imread("./src/modules/license_plates_detection/images/" + dataset_corruptor.random_images[0])
+initial_image = cv2.imread("./assets/4AM0013.JPG")
 image_corruptor = ImageCorruptor()
 
 def fetch_blur_image_results(image):
@@ -23,15 +27,22 @@ def fetch_blur_image_results(image):
     blurred_image = image_corruptor.blur(image, int(initial_image_blur*0.05))
     image_corruptor.display_image(blurred_image)
     print(image_corruptor.get_image_blur(blurred_image))
-    
-# fetch_blur_image_results(initial_image)
 
 def fetch_brightness_image_results(image):
-    print(image_corruptor.get_image_brightness(image))
+    # initial_image_brightness = image_corruptor.get_image_brightness(image)
+    # print("Initial image brightness: ", initial_image_brightness)
+    # image_corruptor.display_image(image)
+    # normalized_image_brightness = initial_image_brightness / 255
+    # darkened_image = image_corruptor.darken(image, 0.2)
+    # image_corruptor.display_image(darkened_image)
+    # print("New image brightness: ", image_corruptor.get_image_brightness(darkened_image))
+    print("Initial image brightness: ", image_corruptor.get_image_brightness(image))
     image_corruptor.display_image(image)
-    darkened_image = image_corruptor.darken(image, 0.2)
-    image_corruptor.display_image(darkened_image)
-    print(image_corruptor.get_image_blur(darkened_image))
+    image_points = image_corruptor.equalize(image)
+    open_cv_image = np.array(image_points)
+    image_corruptor.display_image(open_cv_image)
+    print("Image brightness after equalization: ", image_corruptor.get_image_brightness(open_cv_image))
+    
     
 fetch_brightness_image_results(initial_image)
 

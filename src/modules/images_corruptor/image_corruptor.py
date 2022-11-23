@@ -1,17 +1,21 @@
+from functools import reduce
+import operator
 import cv2
 import math
 import numpy as np
 from PIL import Image, ImageStat
 
 class ImageCorruptor:
+    RGB_IMAGE_LAYERS = 3
+    
     def __init__(self):
         pass
     
     def get_image_blur(self, image):
-        grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        laplace_variance = round(cv2.Laplacian(grayscale_image, cv2.CV_64F).var(), 2)
-        
-        return laplace_variance
+        # blur_map = blur_detector.detectBlur(image, downsampling_factor=4, num_scales=4, scale_start=2, num_iterations_RF_filter=3)
+        # print('blur_map *' + blur_map)
+
+        return "BLUR"
     
     def get_image_resolution(self, image):
         height = image.shape[0]
@@ -26,7 +30,21 @@ class ImageCorruptor:
         pil_image = Image.fromarray(image)
         stat = ImageStat.Stat(pil_image)
         r,g,b = stat.mean
-        return math.sqrt(0.241*(r**2) + 0.691*(g**2) + 0.068*(b**2))
+        return round(math.sqrt(0.241*(r**2) + 0.691*(g**2) + 0.068*(b**2)), 2)
+    
+
+    def equalize(self, image_array):
+        image = Image.fromarray(image_array)
+        h = image.convert("L").histogram()
+        lut = []
+        for b in range(0, len(h), 256):
+            step = reduce(operator.add, h[b:b+256]) / 255
+            n = 0
+            for i in range(256):
+                lut.append(n / step)
+                n = n + h[i+b]
+                
+        return image.point(lut*self.RGB_IMAGE_LAYERS)
 
     def blur(self, image, blur_intensity=10):
         return cv2.blur(image, (blur_intensity, blur_intensity))
