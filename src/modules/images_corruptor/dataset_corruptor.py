@@ -1,6 +1,7 @@
 import os
 import cv2
 import random
+import numpy as np
 from modules.images_corruptor.image_corruptor import ImageCorruptor
 
 class DatasetCorruptor:
@@ -33,13 +34,21 @@ class DatasetCorruptor:
         for image_name in self.random_images:
             self.filter_image(image_name, filter_types)
 
-    def filter_image(self, image_name, filter_type):
-        image = cv2.imread(self.DATASET_PATH + image_name)
+    def filter_image(self, image_name, filter_tuple, equalize=False):
+        open_cv_image = cv2.imread(self.DATASET_PATH + image_name)
+        self.image_corruptor.display_image(open_cv_image)
         
-        (filter_style, filter_intensity) = filter_type
+        (filter_style, filter_intensity) = filter_tuple
+        
+        should_equalize_image = filter_style == "DARKEN" and equalize
+        
+        if should_equalize_image:
+            image_points = self.image_corruptor.equalize(open_cv_image)
+            open_cv_image = np.array(image_points)
+            self.image_corruptor.display_image(open_cv_image)
         
         filtered_image = self.filter_mapping[filter_style](
-            image, filter_intensity)
+            open_cv_image, filter_intensity)
         
         return filtered_image
             

@@ -23,13 +23,14 @@ resolution_mapping = prepend_filter_intensity("RESOLUTION", [25, 20, 17, 15, 12,
 def generate_corrupted_images_results(random_images, filter_mapping):
     filter_type = filter_mapping[0][0]
     image_names, intensities, match_percentages = [], [], []
-    for image in tqdm(random_images):
+    for image_name in tqdm(random_images):
         for filter_tuple in filter_mapping:
-            filtered_image = dataset_corruptor.filter_image(image, filter_tuple)  
-            image_names.append(image)
+            filtered_image = dataset_corruptor.filter_image(image_name, filter_tuple, True)  
+            image_names.append(image_name)
             intensities.append(filter_tuple[1])
             try: 
                 vehicle_detection.run(filtered_image)
+                image_corruptor.display_image(filtered_image)
                 match_percentages.append(vehicle_detection.license_plate_confidence)
                 print(f"Confidence: {vehicle_detection.license_plate_confidence} | Filter: {filter_tuple}")
             except Exception as e:
@@ -45,6 +46,6 @@ def generate_corrupted_images_results(random_images, filter_mapping):
     dataframe = pd.DataFrame(dictionary)
     dataframe.to_csv(f"{RESULTS_PATH}/{filter_type.lower()}.csv", encoding='utf-8')
    
-generate_corrupted_images_results(dataset_corruptor.random_images, blur_mapping)
 generate_corrupted_images_results(dataset_corruptor.random_images, darken_mapping) 
+generate_corrupted_images_results(dataset_corruptor.random_images, blur_mapping)
 generate_corrupted_images_results(dataset_corruptor.random_images, resolution_mapping)
