@@ -17,16 +17,19 @@ from modules.images_corruptor.dataset_corruptor import DatasetCorruptor
 
 dataset_corruptor = DatasetCorruptor()
 dataset_corruptor.fetch_random_images(1)
-initial_image = cv2.imread("./assets/4AM0013.JPG")
+initial_image = cv2.imread("./assets/brazilian-car-back.jpg")
 image_corruptor = ImageCorruptor()
 
 def fetch_blur_image_results(image):
-    print(image_corruptor.get_image_blur(image))
-    initial_image_blur = image_corruptor.get_image_blur(image)
+    initial_image_blur = image_corruptor.get_image_blur_fft(image)
+    print('initial image blur: ', initial_image_blur)
     image_corruptor.display_image(image)
-    blurred_image = image_corruptor.blur(image, int(initial_image_blur*0.05))
+    blurred_image = image_corruptor.blur(image, int(6))
     image_corruptor.display_image(blurred_image)
-    print(image_corruptor.get_image_blur(blurred_image))
+    final_image_blur = image_corruptor.get_image_blur_fft(blurred_image)
+    print('final image blur: ', final_image_blur)
+    
+fetch_blur_image_results(initial_image)
 
 def fetch_brightness_image_results(image):
     # initial_image_brightness = image_corruptor.get_image_brightness(image)
@@ -44,7 +47,7 @@ def fetch_brightness_image_results(image):
     print("Image brightness after equalization: ", image_corruptor.get_image_brightness(open_cv_image))
     
     
-fetch_brightness_image_results(initial_image)
+# fetch_brightness_image_results(initial_image)
 
 # 255 -> 100
 # 200 -> X * 0.6

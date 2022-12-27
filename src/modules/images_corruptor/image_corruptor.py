@@ -1,8 +1,8 @@
-from functools import reduce
-import operator
 import cv2
 import math
+import operator
 import numpy as np
+from functools import reduce
 from PIL import Image, ImageStat
 
 class ImageCorruptor:
@@ -17,6 +17,27 @@ class ImageCorruptor:
 
         return "BLUR"
     
+    def get_image_blur_fft(self, image, size=60):
+        # grab the dimensions of the image and use the dimensions to
+        # derive the center (x, y) - coordinates
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        (h, w) = gray_image.shape
+        (c_x, c_y) = (int(w / 2.0), int(h / 2.0))
+        # compute the FFT to find the frequency transform, then shift
+        # the zero frequency component (i.e., DC component located at
+        # the top-left corner) to the center where it will be more
+        # easy to analyze
+        fft = np.fft.fft2(gray_image)
+        fft_shift = np.fft.fftshift(fft)
+        fft_shift[c_y - size:c_y + size, c_x - size:c_x + size] = 0
+        fft_shift = np.fft.ifftshift(fft_shift)
+        recon = np.fft.ifft2(fft_shift)
+        magnitude = 20 * np.log(np.abs(recon))
+        mean = np.mean(magnitude)
+        # the image will be considered "blurry" if the mean value of the
+        # magnitudes is less than the threshold value
+        return round(mean, 2)
+        
     def get_image_resolution(self, image):
         height = image.shape[0]
         width = image.shape[1]
