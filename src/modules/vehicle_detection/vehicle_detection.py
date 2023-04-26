@@ -50,8 +50,6 @@ class VehicleClassifier:
         self.outputs = self.network_model.forward(output_names)
         
     def extract_license_plate_confidence(self, incoming_license_plate_confidence):
-        print("CURRENT LICENSE PLATE CONFIDENCE", self.license_plate_confidence)
-        print("INCOMING LICENSE PLATE CONFIDENCE", incoming_license_plate_confidence)
         self.license_plate_confidence = max(self.license_plate_confidence, incoming_license_plate_confidence)
         
     def filter_vehicle_box_negative_values(self, center_y: float, center_x: float, box_height: float, box_width: float):

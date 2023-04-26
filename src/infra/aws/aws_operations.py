@@ -31,7 +31,6 @@ class AwsOperations:
                 ExtraArgs={'ACL': 'public-read-write', 'ContentType': 'image/jpeg'})
 
         except ClientError as e:
-            print(e)
             return False
         return True
 
