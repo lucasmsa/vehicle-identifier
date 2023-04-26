@@ -58,6 +58,8 @@ class ImageCorruptor:
         image = Image.fromarray(image_array)
         h = image.convert("L").histogram()
         lut = []
+        print("Here I am, rock you like a hurricane", len(h))
+        print(h)
         for b in range(0, len(h), 256):
             step = reduce(operator.add, h[b:b+256]) / 255
             n = 0
@@ -72,8 +74,7 @@ class ImageCorruptor:
 
     def darken(self, image, gamma=0.8):
         inv_gamma = 1.0 / gamma
-        table = np.array([((i / 255.0) ** inv_gamma) *
-                         255 for i in np.arange(0, 256)])
+        table = np.array([((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)])
         return cv2.LUT(image.astype(np.uint8), table.astype(np.uint8))
 
     def handle_resolution(self, image, scale_percent=80):

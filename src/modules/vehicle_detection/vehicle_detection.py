@@ -94,7 +94,7 @@ class VehicleClassifier:
     def post_process_data(self):
         original_image_height, original_image_width = self.image.shape[:2]
         boxes, class_ids, confidence_scores = [], [], []
-
+        
         for output in self.outputs:
             for forward_results in output:
                 scores = forward_results[5:]

@@ -10,7 +10,9 @@ class LicensePlateDetector:
 
     def __init__(self):
         self.network = cv2.dnn.readNet(
-            "./yolov3-license_plates.weights", "./yolov3-license_plates-test.cfg")
+            "./yolov3-license_plates.weights", 
+            "./yolov3-license_plates-test.cfg"
+        )
 
     def run(self, image_path: str):
         self.image = cv2.imread(image_path)
