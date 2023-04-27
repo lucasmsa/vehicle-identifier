@@ -10,8 +10,6 @@ dataset_corruptor = DatasetCorruptor()
 vehicle_detection = VehicleClassifier()
 dataset_corruptor.fetch_random_images(50)
 
-print("random images", dataset_corruptor.random_images)
-
 def prepend_filter_intensity(filter_type, intensities):
     return list(map(lambda intensity: (filter_type, intensity), intensities))
 
@@ -32,10 +30,8 @@ def generate_corrupted_images_results(random_images, filter_mapping):
                 vehicle_detection.run(filtered_image)
                 image_corruptor.display_image(filtered_image)
                 match_percentages.append(vehicle_detection.license_plate_confidence)
-                print(f"Confidence: {vehicle_detection.license_plate_confidence} | Filter: {filter_tuple}")
             except Exception as e:
                 match_percentages.append(f"ERROR: {str(e)}")
-                print(str(e))
                 
     dictionary = {
         "image_names": image_names,

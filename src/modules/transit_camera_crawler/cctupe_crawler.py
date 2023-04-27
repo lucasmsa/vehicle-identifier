@@ -28,10 +28,8 @@ class CCTUPECrawler(TransitCameraCrawler):
         if os.path.exists(self.IMAGE_PATH):
             self.aws_operations.upload_file(self.IMAGE_PATH)
             os.remove(self.IMAGE_PATH)
-            print(f"{self.IMAGE_PATH} Image uploaded successfully!")
 
     def print_image(self):
-        print("Trying to print image")
         try:
             wait_config = WebDriverWait(self.driver, 10)
             self.image = wait_config.until(
@@ -41,7 +39,6 @@ class CCTUPECrawler(TransitCameraCrawler):
             self.finish_process()
 
     def select_camera(self):
-        print("Selecting camera element")
         clickable_cameras = self.driver.find_elements(
             By.CSS_SELECTOR, "img[class='leaflet-marker-icon leaflet-zoom-animated leaflet-clickable']")
         camera = random.choice(clickable_cameras)

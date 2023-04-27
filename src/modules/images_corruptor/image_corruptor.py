@@ -12,9 +12,6 @@ class ImageCorruptor:
         pass
     
     def get_image_blur(self, image):
-        # blur_map = blur_detector.detectBlur(image, downsampling_factor=4, num_scales=4, scale_start=2, num_iterations_RF_filter=3)
-        # print('blur_map *' + blur_map)
-
         return "BLUR"
     
     def get_image_blur_fft(self, image, size=60):
@@ -58,8 +55,6 @@ class ImageCorruptor:
         image = Image.fromarray(image_array)
         h = image.convert("L").histogram()
         lut = []
-        print("Here I am, rock you like a hurricane", len(h))
-        print(h)
         for b in range(0, len(h), 256):
             step = reduce(operator.add, h[b:b+256]) / 255
             n = 0
