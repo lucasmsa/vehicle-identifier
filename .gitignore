@@ -12,11 +12,8 @@ images.zip
 __pycache__
 classes.txt
 training.data
-yolov3.weights
-yolov3-320.cfg
+**.weights
 cnn-color-weights
-yolov3-320.weights
 vehicle-color-dataset/
 yolov3-license_plates.weights 
 license_plate_label_parser.py
-yolov3-license_plates-test.cfg

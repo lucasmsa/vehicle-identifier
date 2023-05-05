@@ -36,7 +36,6 @@ class DatasetCorruptor:
 
     def filter_image(self, image_name, filter_tuple, equalize=False):
         open_cv_image = cv2.imread(self.DATASET_PATH + image_name)
-        self.image_corruptor.display_image(open_cv_image)
         
         (filter_style, filter_intensity) = filter_tuple
         
@@ -45,7 +44,6 @@ class DatasetCorruptor:
         if should_equalize_image:
             image_points = self.image_corruptor.equalize(open_cv_image)
             open_cv_image = np.array(image_points)
-            self.image_corruptor.display_image(open_cv_image)
         
         filtered_image = self.filter_mapping[filter_style](
             open_cv_image, filter_intensity)
