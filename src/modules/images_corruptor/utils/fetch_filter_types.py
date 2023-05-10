@@ -1,33 +1,33 @@
-# dataset_corruptor = DatasetCorruptor()
-# dataset_corruptor.run(1, [("BLUR", 10), ("DARKEN", 0.5), ("RESOLUTION", 80)])
-
-# [] Fazer os testes de extração
-# [] Salvar resultados em um csv
-
-# img1.jpg, img2.jpg, img3.jpg...
-# Para cada uma dessas aplicar os filtros
 import cv2
 import os
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 sys.path.insert(1, f'{os.getcwd()}/src')
 from modules.images_corruptor.image_corruptor import ImageCorruptor
 from modules.images_corruptor.dataset_corruptor import DatasetCorruptor
 
+def convert_bgr_to_rgb(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 dataset_corruptor = DatasetCorruptor()
 dataset_corruptor.fetch_random_images(1)
 initial_image = cv2.imread("./vehicle.png")
 image_corruptor = ImageCorruptor()
 
-image_blurred = image_corruptor.blur(initial_image, 20)
-image_corruptor.display_image(image_blurred)
-cv2.imwrite("./image-blurred-20%.png", image_blurred)
+def plot_filtered_image(initial_image, filtered_image, filename):
+    _fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
-image_darkened = image_corruptor.darken(initial_image, 0.4)
-image_corruptor.display_image(image_darkened)
-cv2.imwrite("./image-darkened-0.4.png", image_darkened)
+    axes[0].imshow(initial_image)
+    axes[0].axis("off")
 
-image_resolution = image_corruptor.handle_resolution(initial_image, 20)
-image_corruptor.display_image(image_resolution)
-cv2.imwrite("./image-resolution-20%.png", image_resolution)
+    axes[1].imshow(filtered_image)
+    axes[1].axis("off")
+
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+
+    plt.show()
+
+plot_filtered_image(initial_image, image_corruptor.blur(initial_image, 20), "./image-blurred-20%.png")   
+plot_filtered_image(initial_image, image_corruptor.darken(initial_image, 0.4), "./image-darkened-0.4.png")
+plot_filtered_image(initial_image, image_corruptor.handle_resolution(initial_image, 20), "./image-resolution-20%.png")
